@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+        <script defer src="https://pyscript.net/unstable/pyscript.js"></script>
+    </head>
+    <body>
+        <div id="lineplot"></div>
+
+        <py-env>
+            - numpy
+            - matplotlib
+        </py-env>
+
+<py-script output="lineplot">
+import numpy as np
+import math
+import cmath
+from matplotlib import pyplot as plt
+
+# Parameters
+
+T1 = 0.6 #longitudinal time constant
+T2 = 0.06 #transverse time constant
+
+M0 = [0, 0, 1]
+
+TE = 0.015 #time of excitation
+TR = 0.15 #time of relaxation
+
+dt = 0.0005 #time step
+
+theta_E = math.pi/2 #excitation angle
+theta_I = math.pi #inversion angle
+
+# On resonance spins - delta_w = 0
+
+M = np.zeros((3,int(TR/dt)+1))
+
+# Initial magnetization after excitation
+M[:,0] = np.matmul([[math.cos(theta_E), 0, -math.sin(theta_E)], [0, 1, 0], [math.sin(theta_E), 0, math.cos(theta_E)]], M0)
+
+
+for i in range(0,int(TR/dt)):
+    if i*dt == TE/2:
+        M[:,i+1] = np.matmul([[math.cos(theta_I), 0, -math.sin(theta_I)], [0, 1, 0], [math.sin(theta_I), 0, math.cos(theta_I)]], M[:,i])
+        
+    else:
+        M[:,i+1] = np.matmul([[math.exp(-dt/T2), 0, 0], [0, math.exp(-dt/T2), 0], [0, 0, math.exp(-dt/T1)]], M[:,i]) + [0, 0, np.linalg.norm(M0)*(1-math.exp(-dt/T1))]
+
+
+t = np.linspace(0, TR, num=int(TR/dt)+1)*1000
+plt.plot(t, M[0,:], label = 'Mx')
+plt.plot(t, M[1,:], label = 'My')
+plt.plot(t, M[2,:], label = 'Mz')
+plt.title('Evolution of Magnetization during 1 TR')
+plt.xlabel('Time (ms)')
+plt.ylabel('Magnetization')
+plt.legend()
+plt.show()
+
+plt
+</py-script>
+
+<div id="out"></div>
+
+    </body>
+
+</html>

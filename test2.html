@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <title>PyScript Sierpinski Example</title>
+  <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+  <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+  <style type="text/css">
+    #canvas {
+      background-color: #333;
+
+    }
+    </style>
+</head>
+  
+<body>
+  <canvas id="canvas"></canvas>
+   
+  <script>
+    document.getElementById("canvas").width = window.innerWidth;
+    document.getElementById("canvas").height = window.innerHeight;
+    $(window).resize(function() {
+    //resize just happened, pixels changed
+    document.getElementById("canvas").width = window.innerWidth;
+    document.getElementById("canvas").height = window.innerHeight;
+});
+  </script>
+  <py-script>
+
+from js import document, Math, setInterval, setTimeout
+from pyodide import create_proxy
+
+
+def drawSierpinski(ctx, x, y, width, height, depth):
+    if depth == 0:
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.lineTo(x + width, y)
+        ctx.lineTo(x + width / 2, y + height)
+        ctx.closePath()
+        ctx.fillStyle = 'white'
+        ctx.fill()
+    else:
+        drawSierpinski(ctx, x, y, width / 2, height / 2, depth - 1)
+        drawSierpinski(ctx, x + width / 2, y, width / 2, height / 2, depth - 1)
+        drawSierpinski(ctx, x + width / 4, y + height / 2, width / 2, height / 2, depth - 1)
+
+def draw(depth):
+    canvas = document.getElementById("canvas")
+    ctx = canvas.getContext("2d")
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.translate(canvas.width / 2, canvas.height / 2)
+    if canvas.width < canvas.height:
+        drawSierpinski(ctx, -canvas.width / 2, -canvas.width / 2, canvas.width, canvas.width, depth)
+    else:
+        drawSierpinski(ctx, -canvas.height / 2, -canvas.height / 2, canvas.height, canvas.height, depth)
+
+def main(depth): 
+    draw(depth)
+    setTimeout(lambda: main(depth + 1), 1000)
+    
+main(1)
+</py-script>
+    </body>
+    
+    </html>
